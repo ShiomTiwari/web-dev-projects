@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Taskr — Todo App</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f7f3ee;--surface:#fff;--text:#1a1a2e;--muted:#9b8fa0;--border:#ede8e3;--accent:#6c47ff;--accent2:#ff6b6b;--green:#22c55e;--yellow:#f59e0b}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:2.5rem 1.5rem}
+
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem}
+.header h1{font-size:2.2rem;font-weight:700;letter-spacing:-0.03em}
+.header h1 span{color:var(--accent)}
+.date{font-size:0.85rem;color:var(--muted)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:2rem}
+.stat{background:var(--surface);border-radius:12px;padding:1rem;border:1px solid var(--border)}
+.stat-num{font-size:1.8rem;font-weight:700;font-feature-settings:"tnum"}
+.stat-num.accent{color:var(--accent)}
+.stat-num.green{color:var(--green)}
+.stat-num.yellow{color:var(--yellow)}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+
+/* Progress */
+.progress-wrap{background:var(--surface);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;border:1px solid var(--border)}
+.progress-top{display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.75rem}
+.progress-top span:last-child{color:var(--accent);font-weight:600}
+.progress-bar{height:8px;background:var(--border);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(to right,var(--accent),#9b7aff);border-radius:100px;transition:width 0.5s ease}
+
+/* Input */
+.input-area{background:var(--surface);border-radius:16px;padding:1.25rem;margin-bottom:1.5rem;border:1px solid var(--border)}
+.input-row{display:flex;gap:0.75rem;margin-bottom:0.75rem}
+.task-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-family:'Outfit',sans-serif;font-size:0.95rem;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.2s}
+.task-input:focus{border-color:var(--accent)}
+.add-btn{padding:0.75rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.add-btn:hover{background:#5535e0;transform:translateY(-1px)}
+.input-options{display:flex;gap:0.5rem;flex-wrap:wrap}
+.priority-btn{padding:0.35rem 0.9rem;border-radius:100px;border:1.5px solid transparent;font-size:0.78rem;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s;background:transparent}
+.priority-btn.high{border-color:var(--accent2);color:var(--accent2)}
+.priority-btn.high.active{background:var(--accent2);color:#fff}
+.priority-btn.medium{border-color:var(--yellow);color:var(--yellow)}
+.priority-btn.medium.active{background:var(--yellow);color:#fff}
+.priority-btn.low{border-color:var(--green);color:var(--green)}
+.priority-btn.low.active{background:var(--green);color:#fff}
+.cat-select{margin-left:auto;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid var(--border);font-family:'Outfit',sans-serif;font-size:0.78rem;color:var(--text);background:var(--bg);cursor:pointer;outline:none}
+
+/* Filters */
+.filters{display:flex;gap:0.5rem;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:0.25rem}
+.filter-btn{padding:0.45rem 1.1rem;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:all 0.2s;color:var(--muted)}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Task List */
+.task-list{display:flex;flex-direction:column;gap:0.5rem}
+.task-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;transition:all 0.3s;animation:slideIn 0.3s ease}
+.task-item:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06);transform:translateY(-1px)}
+.task-item.done{opacity:0.55}
+.task-item.done .task-text{text-decoration:line-through;color:var(--muted)}
+.check-btn{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:transparent;font-size:0.75rem}
+.check-btn:hover{border-color:var(--accent)}
+.task-item.done .check-btn{background:var(--green);border-color:var(--green);color:#fff}
+.task-content{flex:1;min-width:0}
+.task-text{font-size:0.95rem;font-weight:500;margin-bottom:0.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-meta{display:flex;gap:0.5rem;align-items:center}
+.task-cat{font-size:0.7rem;padding:0.15rem 0.6rem;border-radius:100px;background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.task-priority{font-size:0.7rem;font-weight:600;padding:0.15rem 0.6rem;border-radius:100px}
+.task-priority.high{background:rgba(255,107,107,0.1);color:var(--accent2)}
+.task-priority.medium{background:rgba(245,158,11,0.1);color:var(--yellow)}
+.task-priority.low{background:rgba(34,197,94,0.1);color:var(--green)}
+.del-btn{padding:0.3rem 0.5rem;background:transparent;border:none;color:var(--muted);cursor:pointer;border-radius:6px;font-size:0.9rem;transition:all 0.2s;opacity:0}
+.task-item:hover .del-btn{opacity:1}
+.del-btn:hover{background:rgba(255,107,107,0.1);color:var(--accent2)}
+
+.empty{text-align:center;padding:4rem 1rem;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:1rem}
+.empty-text{font-size:1rem}
+
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>Task<span>r</span></h1>
+      <div class="date" id="dateDisplay"></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num accent" id="totalCount">0</div><div class="stat-label">Total Tasks</div></div>
+    <div class="stat"><div class="stat-num green" id="doneCount">0</div><div class="stat-label">Completed</div></div>
+    <div class="stat"><div class="stat-num yellow" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top"><span>Today's Progress</span><span id="progressPct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <input class="task-input" id="taskInput" type="text" placeholder="Add a new task..." maxlength="80"/>
+      <button class="add-btn" onclick="addTask()">+ Add</button>
+    </div>
+    <div class="input-options">
+      <button class="priority-btn high" data-p="high" onclick="setPriority('high')">🔴 High</button>
+      <button class="priority-btn medium active" data-p="medium" onclick="setPriority('medium')">🟡 Medium</button>
+      <button class="priority-btn low" data-p="low" onclick="setPriority('low')">🟢 Low</button>
+      <select class="cat-select" id="catSelect">
+        <option value="Personal">Personal</option>
+        <option value="Work">Work</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Health">Health</option>
+        <option value="Study">Study</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-f="all" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" data-f="active" onclick="setFilter('active')">Active</button>
+    <button class="filter-btn" data-f="done" onclick="setFilter('done')">Completed</button>
+    <button class="filter-btn" data-f="high" onclick="setFilter('high')">High Priority</button>
+    <button class="filter-btn" data-f="work" onclick="setFilter('work')">Work</button>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem('taskr_tasks')||'[]');
+let selectedPriority='medium';
+let currentFilter='all';
+
+// Init date
+document.getElementById('dateDisplay').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+function setPriority(p){
+  selectedPriority=p;
+  document.querySelectorAll('.priority-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.priority-btn[data-p="${p}"]`).classList.add('active');
+}
+
+function setFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.filter-btn[data-f="${f}"]`).classList.add('active');
+  render();
+}
+
+function addTask(){
+  const input=document.getElementById('taskInput');
+  const text=input.value.trim();
+  if(!text)return;
+  tasks.unshift({id:Date.now(),text,priority:selectedPriority,category:document.getElementById('catSelect').value,done:false,createdAt:Date.now()});
+  save();render();
+  input.value='';input.focus();
+}
+
+document.getElementById('taskInput').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
+
+function toggleTask(id){
+  const t=tasks.find(t=>t.id===id);
+  if(t)t.done=!t.done;
+  save();render();
+}
+
+function deleteTask(id){
+  tasks=tasks.filter(t=>t.id!==id);
+  save();render();
+}
+
+function save(){localStorage.setItem('taskr_tasks',JSON.stringify(tasks))}
+
+function render(){
+  let filtered=tasks;
+  if(currentFilter==='active')filtered=tasks.filter(t=>!t.done);
+  else if(currentFilter==='done')filtered=tasks.filter(t=>t.done);
+  else if(currentFilter==='high')filtered=tasks.filter(t=>t.priority==='high');
+  else if(currentFilter==='work')filtered=tasks.filter(t=>t.category==='Work');
+
+  const list=document.getElementById('taskList');
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No tasks here!</div></div>`;
+  } else {
+    list.innerHTML=filtered.map(t=>`
+      <div class="task-item${t.done?' done':''}">
+        <button class="check-btn" onclick="toggleTask(${t.id})">${t.done?'✓':''}</button>
+        <div class="task-content">
+          <div class="task-text">${escHtml(t.text)}</div>
+          <div class="task-meta">
+            <span class="task-cat">${t.category}</span>
+            <span class="task-priority ${t.priority}">${t.priority}</span>
+          </div>
+        </div>
+        <button class="del-btn" onclick="deleteTask(${t.id})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  const total=tasks.length,done=tasks.filter(t=>t.done).length;
+  document.getElementById('totalCount').textContent=total;
+  document.getElementById('doneCount').textContent=done;
+  document.getElementById('pendingCount').textContent=total-done;
+  const pct=total?Math.round((done/total)*100):0;
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressFill').style.width=pct+'%';
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// Seed some tasks if empty
+if(!tasks.length){
+  tasks=[
+    {id:1,text:'Build personal portfolio website',priority:'high',category:'Work',done:false,createdAt:Date.now()},
+    {id:2,text:'Complete todo app project',priority:'high',category:'Work',done:true,createdAt:Date.now()},
+    {id:3,text:'Go for morning run',priority:'medium',category:'Health',done:false,createdAt:Date.now()},
+    {id:4,text:'Buy groceries for the week',priority:'low',category:'Shopping',done:false,createdAt:Date.now()},
+  ];
+  save();
+}
+render();
+</script>
+</body>
+</html>
